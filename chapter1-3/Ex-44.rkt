@@ -1,7 +1,6 @@
-#lang htdp/bsl
- (require 2htdp/image)
- (require 2htdp/universe)
- 
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname Ex-44) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp")) #f)))
 (define WHEEL-RADIUS 5)
 (define WHEEL-DISTANCE (* WHEEL-RADIUS 5))
 
@@ -44,6 +43,18 @@
 (check-expect (tock 20) 23)
 (check-expect (tock 78) 81)
 
+; WorldState Number Number String -> WorldState
+; places the car at x-mouse
+; if the given me is "button-down" 
+(define (hyper x-position-of-car x-mouse y-mouse me)
+  (cond
+    [(string=? "button-down" me) x-mouse]
+    [else x-position-of-car]))
+
+(check-expect (hyper 21 10 20 "enter") 21)
+(check-expect (hyper 42 10 20 "button-down") 10)
+(check-expect (hyper 42 10 20 "move") 42)
+
 
 (define Y-CAR (- 50 (/ HEIGHT-CAR 2)))
 ; WorldState -> Image
@@ -66,6 +77,7 @@
   (big-bang ws
     [on-tick tock]
     [to-draw render]
+    [on-mouse hyper]
     [stop-when end]))
 
 
