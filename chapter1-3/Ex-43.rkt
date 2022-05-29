@@ -1,7 +1,6 @@
-#lang htdp/bsl
- (require 2htdp/image)
- (require 2htdp/universe)
- 
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname Ex-43) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp")) #f)))
 (define WHEEL-RADIUS 5)
 (define WHEEL-DISTANCE (* WHEEL-RADIUS 5))
 
@@ -39,18 +38,18 @@
 ;   given: 20, expect 23
 ;   given: 78, expect 81
 (define (tock cw)
-  (+ cw 3))
+  (+ cw 1))
 
-(check-expect (tock 20) 23)
-(check-expect (tock 78) 81)
+(check-expect (tock 20) 21)
+(check-expect (tock 78) 79)
 
 
-(define Y-CAR (- 50 (/ HEIGHT-CAR 2)))
+(define Y-CAR (- 25 (/ HEIGHT-CAR 2)))
 ; WorldState -> Image
 ; places the car into the BACKGROUND scene,
 ; according to the given world state 
 (define (render cw)
-  (place-image CAR (- cw (/ WIDTH-CAR 2)) Y-CAR BACKGROUND))
+  (place-image CAR (- (* cw 3) (/ WIDTH-CAR 2)) (* 50 (sin (- (* cw 3) (/ WIDTH-CAR 2)))) BACKGROUND))
 
 
 ; when the car is out of the right margin
