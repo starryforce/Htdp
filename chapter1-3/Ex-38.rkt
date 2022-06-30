@@ -13,8 +13,10 @@
 ;  (... str ...))
 
 (define (string-remove-last str)
-  (substring str 0 (- (string-length str) 1)))
+  (if (> (string-length str) 0) (substring str 0 (- (string-length str) 1)) str))
 
 
 (string-remove-last "hello")
 (string-remove-last "world")
+(string-remove-last "a")
+(string-remove-last "")
