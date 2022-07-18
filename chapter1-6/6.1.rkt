@@ -10,7 +10,7 @@
 (define MISSILE (triangle MISSILE-SIDE "solid" "red"))
 
 (define UFO (overlay (circle 10 "solid" "green")
-                     (ellipse 60 30 "solid" "grey")))
+                     (ellipse 60 10 "solid" "grey")))
 
 
 (define BACKGROUND-WIDTH 400)
@@ -19,7 +19,6 @@
 
 (define-struct aim [ufo tank])
 (define-struct fired [ufo tank missile])
-
 
 ; A UFO is a Posn. 
 ; interpretation (make-posn x y) is the UFO's location 

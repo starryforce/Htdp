@@ -17,7 +17,6 @@
 (define BACKGROUND-HEIGHT 800)
 (define BACKGROUND (rectangle BACKGROUND-WIDTH BACKGROUND-HEIGHT "solid" "royalblue"))
 
-
 (define-struct aim [ufo tank])
 (define-struct fired [ufo tank missile])
 
