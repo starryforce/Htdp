@@ -231,7 +231,13 @@
 (check-expect (close-enough (make-posn 10 20) (make-posn 10 30)) #true)
 
 
-(define (si-render-final si) (text "Earth get fucked up!!!" 16 "red"))
+(define (si-render-final si) (cond [(aim? si) (text "Earth get fucked up!!!" 32 "red")]
+                                   [(fired? si) (if (close-enough (fired-ufo si) (fired-missile si))
+                                                    (text "You save the Earth !!!" 32 "green")
+                                                    (text "Earth get fucked up!!!" 32 "red"))]))
+
+
+(text "Earth get fucked up!!!" 16 "red")
 
 
 (define (si-main loc)
