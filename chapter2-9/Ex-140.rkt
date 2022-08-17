@@ -24,3 +24,18 @@
 (check-expect (all-true ex3) #false)
 (check-expect (all-true ex4) #true)
 (check-expect (all-true ex5) #false)
+
+
+; List-of-Booleans -> Boolean
+; whether at least one item of alob is true
+(define (one-true alob)
+  (cond [(empty? alob) #false]
+        [else (cond [(not (false? (first alob))) #true]
+                    [else (one-true (rest alob))])]))
+
+(check-expect (one-true ex0) #false)
+(check-expect (one-true ex1) #true)
+(check-expect (one-true ex2) #false)
+(check-expect (one-true ex3) #true)
+(check-expect (one-true ex4) #true)
+(check-expect (one-true ex5) #false)
