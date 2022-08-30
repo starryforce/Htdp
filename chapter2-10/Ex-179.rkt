@@ -60,3 +60,22 @@
               (make-editor (cons "d" (cons "c" (cons "b" (cons "a" '())))) (cons "e" (cons "f" '()))))
                                                
 
+; Editor -> Editor
+; deletes a 1String to the left of the cursor,
+; if possible 
+(define (editor-del ed)
+  (if (empty? (editor-pre ed))
+      ed
+      (make-editor (rest (editor-pre ed))
+                   (editor-post ed))))
+
+
+(check-expect (editor-del (make-editor '() '()))
+              (make-editor '() '()))
+(check-expect (editor-del (make-editor (cons "a" (cons "b" (cons "c" '()))) '()))
+              (make-editor (cons "b" (cons "c" '())) '()))
+(check-expect (editor-del (make-editor '() (cons "c" (cons "b" (cons "a" '())))))
+              (make-editor '() (cons "c" (cons "b" (cons "a" '())))))
+(check-expect (editor-del (make-editor (cons "a" (cons "b" '())) (cons "c" (cons "d" '()))))
+              (make-editor (cons "b" '()) (cons "c" (cons "d" '()))))
+
