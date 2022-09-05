@@ -12,3 +12,8 @@
 (check-expect ex4 (cons '() (cons '() (cons (cons 1 '()) '()))))
 (check-expect ex5 (cons "a" (cons (cons 1 '()) (cons #false (cons '() '())))))
 
+(check-expect ex1 (list "a" 0 #false))
+(check-expect ex2 (list (list 1 13)))
+(check-expect ex3 (list (list 1 (list 13 '()))))
+(check-expect ex4 (list '() '() (list 1)))
+(check-expect ex5 (list "a" (list 1) #false '()))
