@@ -72,5 +72,38 @@
 (check-expect (count-letter "z" '()) (make-letter-count "z" 0))
 (check-expect (count-letter "a" dict1) (make-letter-count "a" 2))
 
+; List-of-letter-counts -> List-of-letter-counts
+; sort alolc use field count by descending order
+(define (sort> alolc)
+  (cond [(empty? alolc) '()]
+        [else (insert (first alolc) (sort> (rest alolc)))]))
+
+(check-expect (sort>(list (make-letter-count "a" 1)
+                    (make-letter-count "b" 2)))
+              (list (make-letter-count "b" 2)
+                    (make-letter-count "a" 1)))
+(check-expect (sort>(list (make-letter-count "a" 1)))
+              (list (make-letter-count "a" 1)))
+(check-expect '() '())
+
+; LetterCount List-of-letter-counts -> List-of-letter-counts
+; insert lc into alolc by descending order
+(define (insert lc alolc)
+  (cond [(empty? alolc) (list lc)]
+        [else (if (larger? lc (first alolc))
+                  (cons lc alolc)
+                  (cons (first alolc) (insert lc (rest alolc))))]))
+
+; LetterCount LetterCount -> Boolean;
+; determine if lc1's count is larger than or equal to lc2's
+(define (larger? lc1 lc2)
+  (>= (letter-count-count lc1)
+      (letter-count-count lc2)))
+
+(check-expect (larger? (make-letter-count "b" 2) (make-letter-count "b" 2)) #true)
+(check-expect (larger? (make-letter-count "b" 2) (make-letter-count "a" 1)) #true)
+(check-expect (larger? (make-letter-count "a" 1) (make-letter-count "b" 2)) #false)
+
+
 
 

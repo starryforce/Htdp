@@ -81,12 +81,20 @@
 ; produces the Letter-Count for the letter
 ; that occurs most often as the first one in the given Dictionary dict.
 (define (most-frequent dict)
-  (count-by-letter LETTERS dict))
+  (query-most (count-by-letter LETTERS dict)))
 
 (check-expect (most-frequent dict1) (make-letter-count "b" 3))
 
 ; List-of-letter-counts -> LetterCount
-(define (query-most alolc) (make-letter-count "b" 3))
+; query the most often letter in alolc
+(define (query-most alolc)
+  (cond [(empty? (rest alolc)) (first alolc)]
+        [else (if (>= (letter-count-count (first alolc)) (letter-count-count (query-most (rest alolc))))
+                  (first alolc)
+                  (query-most (rest alolc)))]))
 
-(check-expect (query-most dict1) (make-letter-count "b" 3))
+(check-expect (query-most (list (make-letter-count "b" 3)
+                                (make-letter-count "u" 23)
+                                (make-letter-count "z" 33))) 
+              (make-letter-count "z" 33))
 
