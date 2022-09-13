@@ -34,10 +34,31 @@
 ; List-of-strings -> List-of-strings
 ; construct a list of strings which every String from alos exactly once
 (define (create-set alos)
-  (cond [(empty? alos) ...]
-        [else (.. (first alos) ....
-                  (create-set (rest alos)) ...)]))
+  (cond [(empty? alos) '()]
+        [else (cons (first alos)
+                    (create-set (remove-s (first alos) (rest alos))))]))
 
 (check-expect (create-set '()) '())
-(check-expect (create-set "a" "a" "b" "c") (list "a" "b" "c"))
-(check-expect (create-set "a" "b" "c") (list "a" "b" "c"))
+(check-expect (create-set (list "a" "a" "b" "c")) (list "a" "b" "c"))
+(check-expect (create-set (list "a" "b" "c")) (list "a" "b" "c"))
+
+; String List-of-strings -> List-of-strings
+; remove every string equal to s in alos
+(define (remove-s s alos)
+  (cond [(empty? alos) '()]
+        [else (if (string=? s (first alos))
+                  (remove-s s (rest alos))
+                  (cons (first alos) (remove-s s (rest alos))))]))
+
+
+(check-expect (remove-s "a" (list "a" "a" "b" "c")) (list "b" "c"))
+(check-expect (remove-s "a" (list "a")) '())
+(check-expect (remove-s "a" '()) '())
+
+; LTracks -> List-of-strings
+; produces a list of unique album titles i alot
+(define (select-album-titles/unique alot)
+  (create-set
+   (select-all-album-titles alot)))
+
+(define data (read-itunes-as-tracks "C:/Users/StarryForce/OneDrive/itunes2.xml"))
