@@ -28,3 +28,7 @@
 (check-expect (total-time ltracks0) 0)
 (check-expect (total-time ltracks1) 457680)
 (check-expect (total-time ltracks2) 761849)
+
+(define data (read-itunes-as-tracks "C:/Users/StarryForce/OneDrive/itunes2.xml"))
+; 446092
+(total-time data)

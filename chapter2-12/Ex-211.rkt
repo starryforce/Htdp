@@ -10,7 +10,7 @@
  
 ; A Dictionary is a List-of-strings.
 (define AS-LIST (read-lines LOCATION))
-；(define AS-LIST (list "egg" "dog" "act" "cat"))
+;(define AS-LIST (list "egg" "dog" "act" "cat"))
 
 ; A Word is one of:
 ; – '() or
