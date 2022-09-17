@@ -4,12 +4,11 @@
 (require 2htdp/universe)
 
 (define WORM_SIZE 5)
-(define SPEED (* WORM_SIZE 2))
-(define WIDTH_COUNT 100)
-(define HEIGHT_COUNT 100)
+(define WIDTH_COUNT 50)
+(define HEIGHT_COUNT 40)
 
 (define WORM (circle WORM_SIZE "solid" "red"))
-(define BACKGROUND (empty-scene (* WIDTH_COUNT WORM_SIZE) (* HEIGHT_COUNT WORM_SIZE)))
+(define BACKGROUND (empty-scene (* WIDTH_COUNT WORM_SIZE 2) (* HEIGHT_COUNT WORM_SIZE 2)))
 
 ; A Direction is one of:
 ; - "up"
@@ -76,20 +75,43 @@
 
 ; Worm -> Boolean
 ; end the game if the worm out of the bounder
-(define (fail w)
-  (or (< (posn-x (worm-position)) 0 ...
-       (posn-y (worm-position))))
+(define (fail w) (or (out-range (posn-x (worm-position w)) 0 WIDTH_COUNT)
+                     (out-range (posn-y (worm-position w)) 0 HEIGHT_COUNT)))
 
 (check-expect (fail (make-worm "up" (make-posn 3 4))) #false)
-(check-expect (fail (make-worm "up" (make-posn 100 100))) #false)
+(check-expect (fail (make-worm "up" (make-posn 50 40))) #false)
 (check-expect (fail (make-worm "up" (make-posn 0 0))) #false)
 (check-expect (fail (make-worm "up" (make-posn -1 4))) #true)
 (check-expect (fail (make-worm "up" (make-posn -1 101))) #true)
+
+; Number Nubmer Number -> Boolean;
+; determine if x is smaller than (not equal) min
+; or larger than (not equal) max
+(define (out-range x min max)
+  (or (< x min) (> x max)))
+
+(check-expect (out-range 10 0 100) #false)
+(check-expect (out-range 0 0 100) #false)
+(check-expect (out-range 100 0 100) #false)
+(check-expect (out-range -1 0 100) #true)
+(check-expect (out-range 101 0 100) #true)
+
+; Worm -> Image
+; when the game end, render text to prompt
+(define (render-fail w) (place-image/align
+                           (text "worm hit border" 16 "red")
+                           0
+                           (image-height (render w))
+                           "left"
+                           "bottom"
+                           (render w)))
+  
 
 (define (worm-main rate)
   (big-bang (make-worm "right" (make-posn 5 5))
     [on-draw render]
     [on-tick tock rate]
-    [on-key control]))
+    [on-key control]
+    [stop-when fail render-fail]))
 
-;(worm-main 0.1)
+;`(worm-main 0.1)
