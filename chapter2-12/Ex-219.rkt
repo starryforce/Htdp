@@ -4,11 +4,14 @@
 (require 2htdp/universe)
 
 (define WORM_SIZE 5)
+(define UNIT_SIZE (* WORM_SIZE 2))
 (define WIDTH_COUNT 50)
 (define HEIGHT_COUNT 50)
 
 (define WORM (circle WORM_SIZE "solid" "red"))
-(define BACKGROUND (empty-scene (* WIDTH_COUNT WORM_SIZE 2) (* HEIGHT_COUNT WORM_SIZE 2)))
+(define FOOD (circle WORM_SIZE "solid" "green"))
+(define BACKGROUND (empty-scene (* WIDTH_COUNT WORM_SIZE 2)
+                                (* HEIGHT_COUNT WORM_SIZE 2)))
 
 ; A Direction is one of:
 ; - "up"
@@ -34,47 +37,137 @@
 (define worm1 (make-worm "up" posns1))
 (define worm2 (make-worm "up" posns2))
 
-; Worm -> Image
-; put the image of worm onto the background
-(define (render w) (render-worm(worm-positions w)))
+
+(define-struct game [worm food])
+; A Game is a structure:
+; (make-game Worm Posn)
+; interpretation (make-game w p) represents
+; a worm and a food at position p
+
+(define game1 (make-game worm1 (make-posn 10 20)))
+(define game2 (make-game worm1 (make-posn 3 3)))
+(define game3 (make-game worm2 (make-posn 3 3)))
+
+; Game -> Image
+; put the image of worm and food in game onto the background
+(define (render g)
+  (render-food (game-food g)
+               (render-worm (worm-positions (game-worm g)))))
+
+
+; Posn Image -> Image
+; put f onto the image s
+(define (render-food f s)
+  (place-image/align FOOD
+                     (* UNIT_SIZE (posn-x f))
+                     (* UNIT_SIZE (posn-y f))
+                     "left"
+                     "top"
+                     s))
+
+(check-expect (render-food (make-posn 3 3) BACKGROUND)
+              (place-image/align FOOD
+                                 (* UNIT_SIZE 3)
+                                 (* UNIT_SIZE 3)
+                                 "left"
+                                 "top"
+                                 BACKGROUND))
+                                                                    
 
 
 ; List-of-posns -> Image
 ; put the image of worm onto the background
 (define (render-worm alop)
   (cond [(empty? alop) BACKGROUND]
-        [else (place-image WORM
-                           (+ (* WORM_SIZE 2 (posn-x (first alop))) WORM_SIZE)
-                           (+ (* WORM_SIZE 2 (posn-y (first alop))) WORM_SIZE)
+        [else (place-image/align WORM
+                           (* UNIT_SIZE (posn-x (first alop)))
+                           (* UNIT_SIZE (posn-y (first alop)))
+                           "left"
+                           "top"
                            (render-worm (rest alop)))]))
 
 
-(check-expect (render worm1)
-              (place-image WORM
-                           (+ (* WORM_SIZE 2 3) WORM_SIZE)
-                           (+ (* WORM_SIZE 2 4) WORM_SIZE)
+(check-expect (render-worm posns1)
+              (place-image/align WORM
+                           (* UNIT_SIZE 3)
+                           (* UNIT_SIZE 4)
+                           "left"
+                           "top"
                            BACKGROUND))
 
-(check-expect (render worm2)
-              (place-image WORM
-                           (+ (* WORM_SIZE 2 3) WORM_SIZE)
-                           (+ (* WORM_SIZE 2 6) WORM_SIZE)
-                           (place-image WORM
-                                        (+ (* WORM_SIZE 2 3) WORM_SIZE)
-                                        (+ (* WORM_SIZE 2 5) WORM_SIZE)
-                                        (place-image WORM
-                                                     (+ (* WORM_SIZE 2 3) WORM_SIZE)
-                                                     (+ (* WORM_SIZE 2 4) WORM_SIZE)
+(check-expect (render-worm posns2)
+              (place-image/align WORM
+                           (* UNIT_SIZE 3)
+                           (* UNIT_SIZE 6)
+                           "left"
+                           "top"
+                           (place-image/align WORM
+                                        (* UNIT_SIZE 3)
+                                        (* UNIT_SIZE 5)
+                                        "left"
+                                        "top"
+                                        (place-image/align WORM
+                                                     (* WORM_SIZE 2 3)
+                                                     (* WORM_SIZE 2 4)
+                                                     "left"
+                                                     "top"
                                                      BACKGROUND))))
+
+; Posn -> Posn 
+; generate a posn not equal to the origin p
+; which x coordinate is less than WIDTH_COUNT
+; y coordinate is less than HEIGHT_COUNT
+(check-satisfied (food-create (make-posn 1 1)) not=-1-1?)
+(define (food-create p)
+  (food-check-create
+     p (make-posn (random WIDTH_COUNT) (random HEIGHT_COUNT))))
+ 
+; Posn Posn -> Posn 
+; generative recursion 
+; check if the candidate is equal to p,
+; if equal, generate another until not equal
+(define (food-check-create p candidate)
+  (if (equal? p candidate) (food-create p) candidate))
+ 
+; Posn -> Boolean
+; use for testing only 
+(define (not=-1-1? p)
+  (not (and (= (posn-x p) 1) (= (posn-y p) 1))))
+
+
+; Game -> Game
+; For each clock tick, 
+; - if food is at the next position the head is, worm eat
+;   the food and longer than past by one diameter, and another
+;   food generate randomly on the scene
+; - otherwise, the worm should just move a diameter.
+(define (tock g)
+  (cond [(equal? (game-food g) (next-p (first (worm-positions (game-worm g))) (worm-direction (game-worm g))))
+         (make-game (eat-food (game-worm g) (game-food g)) (food-create (game-food g)))]
+        [else (make-game (tock-worm (game-worm g)) (game-food g) )]))
+
+(check-expect (tock game1) (make-game (tock-worm (game-worm game1)) (game-food game1)))
+(check-expect (game-worm (tock game2)) (game-worm (make-game (make-worm "up" (list (make-posn 3 3) (make-posn 3 4))) (make-posn 5 9))))
+
+; Worm Food -> Worm
+; worm eat food and become one more diameter logner
+(define (eat-food w f)
+  (make-worm (worm-direction w)
+             (cons f (worm-positions w))))
+
+(check-expect (eat-food worm1 (make-posn 8 7)) (make-worm "up" (cons (make-posn 8 7) posns1)))
+(check-expect (eat-food worm2 (make-posn 9 9)) (make-worm "up" (cons (make-posn 9 9) posns2)))
+
+
 ; Worm -> Worm
 ; For each clock tick, the worm should move a diameter.
-(define (tock w)
+(define (tock-worm w)
   (make-worm (worm-direction w)
              (cons (next-p (first (worm-positions w)) (worm-direction w))
                    (remove-last (worm-positions w)))))
 
-(check-expect (tock worm1) (make-worm "up" (list (make-posn 3 3))))
-(check-expect (tock worm2) (make-worm "up" (list (make-posn 3 3) (make-posn 3 4) (make-posn 3 5))))
+(check-expect (tock-worm worm1) (make-worm "up" (list (make-posn 3 3))))
+(check-expect (tock-worm worm2) (make-worm "up" (list (make-posn 3 3) (make-posn 3 4) (make-posn 3 5))))
 
 ; Posn Direction -> Posn
 ; get next position according to current position and direction
@@ -97,19 +190,19 @@
 (check-expect (remove-last posns1) '())
 (check-expect (remove-last posns2) (list (make-posn 3 4) (make-posn 3 5)))
 
-; Worm String -> Worm
+; Game String -> Worm
 ; change the moving direction of the worm according to which key is stroke
-(define (control w key)
+(define (control g key)
   (cond [(or (string=? "up" key)
              (string=? "right" key)
              (string=? "down" key)
              (string=? "left" key))
-         (make-worm key (worm-positions w))]
-         [else w]))
+         (make-game (make-worm key (worm-positions (game-worm g))) (game-food g))]
+         [else g]))
 
-(check-expect (control worm1 "a") worm1)
-(check-expect (control worm1 "down") (make-worm "down" posns1))
-(check-expect (control worm2 "up") (make-worm "up" posns2))
+(check-expect (control game1 "a") game1)
+(check-expect (control game1 "down") (make-game (make-worm "down" posns1) (make-posn 10 20)))
+(check-expect (control game3 "up") (make-game (make-worm "up" posns2) (make-posn 3 3)))
 
 ; Number Nubmer Number -> Boolean;
 ; determine if x is smaller than (not equal) min
@@ -123,6 +216,11 @@
 (check-expect (out-range -1 0 100) #true)
 (check-expect (out-range 101 0 100) #true)
 
+
+; Game -> Boolean
+; determine if game is end
+(define (fail-game g)
+  (fail (game-worm g)))
 
 ; Worm -> Boolean
 ; determine if the game is end
@@ -155,24 +253,26 @@
 ; Worm -> Boolean
 ; - crash on the worm itself
 (define (fail-self w)
-  (member?(first (worm-positions w)) (rest (worm-positions w))))
+  (member? (first (worm-positions w)) (rest (worm-positions w))))
 
 (check-expect (fail-self (make-worm "up" (list (make-posn 2 1) (make-posn 3 1) (make-posn 3 0) (make-posn 2 0) (make-posn 1 0)))) #false)
 
-; Worm -> Image
+; Game -> Image
 ; when the game end, render text to prompt
-(define (render-fail w) (place-image/align
-                           (text (if (fail-wall w) "worm hit border" "worm hit itself") 16 "red")
+(define (render-fail g) (place-image/align
+                           (text (if (fail-wall (game-worm g)) "worm hit border" "worm hit itself") 16 "red")
                            0
-                           (image-height (render w))
+                           (image-height BACKGROUND)
                            "left"
                            "bottom"
-                           (render w)))
+                           (render g)))
 
 
 (define (worm-main rate)
-  (big-bang (make-worm "right" (list (make-posn 9 5) (make-posn 8 5) (make-posn 7 5) (make-posn 6 5) (make-posn 5 5) (make-posn 4 5) (make-posn 3 5) (make-posn 2 5)))
+  (big-bang (make-game (make-worm "right"
+                                  (list (make-posn 9 5) (make-posn 8 5) (make-posn 7 5) (make-posn 6 5) (make-posn 5 5) (make-posn 4 5) (make-posn 3 5) (make-posn 2 5)))
+                       (make-posn 10 10))
     [on-draw render]
     [on-tick tock rate]
     [on-key control]
-    [stop-when fail render-fail]))
+    [stop-when fail-game render-fail]))

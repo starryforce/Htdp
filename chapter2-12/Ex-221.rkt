@@ -1,9 +1,10 @@
 #lang htdp/bsl+
 
 (require 2htdp/image)
+(require 2htdp/universe)
 
 (define WIDTH 10) ; # of blocks, horizontally
-(define HEIGHT (* 2 WIDTH)) ; # of blocks, horizontally
+(define HEIGHT (* 4 WIDTH)) ; # of blocks, horizontally
 (define SIZE 10) ; blocks are squares
 (define SCENE-SIZE (* WIDTH SIZE))
 (define SCENE (empty-scene SCENE-SIZE (* HEIGHT SIZE)))
@@ -124,4 +125,10 @@
               (make-tetris (make-block 1 0) (list block-landed)))
 (check-expect (tock tetris2-drop)
               (make-tetris (make-block 1 0) (list block-on-block block-landed)))
-                           
+
+(define (tetris-main rate)
+  (big-bang tetris0
+    [on-draw render]
+    [on-tick tock rate]))
+
+(tetris-main 0.001)
