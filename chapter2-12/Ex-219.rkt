@@ -268,11 +268,12 @@
                            (render g)))
 
 
-(define (worm-main rate)
-  (big-bang (make-game (make-worm "right"
-                                  (list (make-posn 9 5) (make-posn 8 5) (make-posn 7 5) (make-posn 6 5) (make-posn 5 5) (make-posn 4 5) (make-posn 3 5) (make-posn 2 5)))
-                       (make-posn 10 10))
+(define (worm-main rate seperate)
+  (length (worm-positions (game-worm
+                           (big-bang (make-game (make-worm "right" (list (make-posn 2 5))) (make-posn 10 10))
     [on-draw render]
     [on-tick tock rate]
     [on-key control]
-    [stop-when fail-game render-fail]))
+    [stop-when fail-game render-fail])))))
+
+(worm-main 0.15 #false)

@@ -3,7 +3,7 @@
 (require 2htdp/image)
 (require 2htdp/universe)
 
-(define WIDTH 50) ; # of blocks, horizontally
+(define WIDTH 12) ; # of blocks, horizontally
 (define HEIGHT (* 2 WIDTH)) ; # of blocks, horizontally
 (define SIZE 10) ; blocks are squares
 (define SCENE-SIZE (* WIDTH SIZE))
@@ -126,9 +126,75 @@
 (check-expect (tock tetris2-drop)
               (make-tetris (make-block 1 0) (list block-on-block block-landed)))
 
+; Tetris KeyEvent -> Tetris
+; use arrow key "left" or "right" to control dropping block
+(define (control tt ke)
+  (make-tetris (cond [(or (string=? ke "left") (string=? ke "right"))
+                      (if (member? (control-block (tetris-block tt) ke) (tetris-landscape tt))
+                          (tetris-block tt)
+                          (control-block (tetris-block tt) ke))]
+                     [else (tetris-block tt)])
+               (tetris-landscape tt)))
+
+(check-expect (control (make-tetris (make-block 0 20) '()) "left") (make-tetris (make-block 0 20) '()))
+(check-expect (control (make-tetris (make-block (sub1 WIDTH) 20) '()) "right")
+              (make-tetris (make-block (sub1 WIDTH) 20) '()))
+(check-expect (control tetris0 "right") (make-tetris (make-block 6 20) '()))
+(check-expect (control tetris0 "left") (make-tetris (make-block 4 20) '()))
+(check-expect (control tetris0 "a") tetris0)
+(check-expect (control (make-tetris (make-block 0 (- HEIGHT 2)) (list (make-block 1 (- HEIGHT 2)) (make-block 1 (- HEIGHT 1))))  "right")
+              (make-tetris (make-block 0 (- HEIGHT 2)) (list (make-block 1 (- HEIGHT 2)) (make-block 1 (- HEIGHT 1)))))
+(check-expect (control (make-tetris (make-block 2 (- HEIGHT 2)) (list (make-block 1 (- HEIGHT 2)) (make-block 1 (- HEIGHT 1))))  "left")
+              (make-tetris (make-block 2 (- HEIGHT 2)) (list (make-block 1 (- HEIGHT 2)) (make-block 1 (- HEIGHT 1)))))
+              
+
+; Block Direction -> Block
+; Directions is one of:
+; - "left"
+; - "right"
+; 
+(define (control-block b direction)
+  (cond [(string=? direction "left") (make-block (max (sub1 (block-x b)) 0) (block-y b))]
+        [(string=? direction "right") (make-block (min (add1 (block-x b)) (sub1 WIDTH)) (block-y b))]))
+
+(check-expect (control-block (make-block 0 10) "left") (make-block 0 10))
+(check-expect (control-block (make-block 10 10) "left") (make-block 9 10))
+(check-expect (control-block (make-block 10 10) "right") (make-block 11 10))
+(check-expect (control-block (make-block (sub1 WIDTH) 10) "right") (make-block (sub1 WIDTH) 10))
+
+; Tetris -> Boolean
+; determine if any column reach the top of cancas
+(define (game-end tt)
+  (some-at-top? (tetris-landscape tt)))
+
+; Landscape -> Boolean
+; some of the block in alol 's y-coordinate is 0
+(define (some-at-top? alol)
+  (cond [(empty? alol) #false]
+        [else (or (= (block-y (first alol)) 0)
+                  (some-at-top? (rest alol))
+                   )]))
+
+; Tetris -> Image
+; display the score when game end
+(define (game-end-render tt) (place-image/align (text (string-append "the game end, your score is "
+                                                                     (number->string (length (tetris-landscape tt))))
+                                                      16
+                                                      "green")
+                                                0
+                                                (image-height SCENE)
+                                                "left"
+                                                "bottom"
+                                                (render tt)))
+
+(check-expect (some-at-top? (list (make-block 5 0))) #true)
+(check-expect (some-at-top? (list (make-block 5 10))) #false)
+
 (define (tetris-main rate)
   (big-bang tetris0
     [on-draw render]
-    [on-tick tock rate]))
+    [on-key control]
+    [on-tick tock rate]
+    [stop-when game-end game-end-render]))
 
-;(tetris-main 0.001)
+(tetris-main 0.02)
