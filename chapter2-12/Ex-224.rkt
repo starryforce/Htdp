@@ -7,6 +7,7 @@
 (define SCENE-HEIGHT 800)
 
 (define TANK (above (wedge 10 180 "solid" "grey") (rectangle 40 10 "solid" "grey")))
+(define TANK-SPEED 10)
 (define MOON (circle 20 "solid" "lightgoldenrodyellow"))
 (define SCENE (place-image/align MOON 80 40 "right" "top" (empty-scene SCENE-WIDTH SCENE-HEIGHT "dark blue")))
 
@@ -39,16 +40,24 @@
                                           "bottom"
                                           SCENE))
 
+; Tank -> Tank
+; Tank moves according it's current direction
+(define (tock t) t)
+
+
 
 ; Tank KeyEvent -> Tank
 ; press "left" to make tank move to left,
 ; press "right" to make tank move to right,
-(define (control t ke) t)
+(define (control t ke)
+  (cond [(string=? ke "left") (max (- t TANK-SPEED) 0) ]
+        [(string=? ke "right") (min (+ t TANK-SPEED) SCENE-WIDTH)]
+        [else t]))
 
 (check-expect (control 0 "left") 0)
 (check-expect (control SCENE-WIDTH "right") SCENE-WIDTH)
-(check-expect (control 100 "left") 99)
-(check-expect (control 100 "right") 101)
+(check-expect (control 100 "left") (- 100 TANK-SPEED))
+(check-expect (control 100 "right") (+ 100 TANK-SPEED))
 (check-expect (control 100 "a") 100)
 
 
