@@ -10,6 +10,10 @@
 (define MOON (circle 20 "solid" "lightgoldenrodyellow"))
 (define SCENE (place-image/align MOON 80 40 "right" "top" (empty-scene SCENE-WIDTH SCENE-HEIGHT "dark blue")))
 
+(define MISSILE (isosceles-triangle 20 30 "solid" "red"))
+
+
+; A Missile is a Posn
 
 ; A Direction is one of:
 ; - "left"
@@ -17,7 +21,7 @@
 
 (define-struct tank [position direction])
 ; A Tank is a structure:
-; (make-tank Number Direction)
+; (make-tank Number Direction Posn)
 ; interpretation (make-tank p d) represents a tank
 ; current at position p moving towards d
 
@@ -27,6 +31,18 @@
 (define tank4 (make-tank (/ SCENE-WIDTH 4) "right"))
 (define tank5 (make-tank SCENE-WIDTH "left"))
 (define tank6 (make-tank SCENE-WIDTH "right"))
+
+; A Missile is a Posn
+; A List-of-missiles is one of:
+; - '()
+; (cons Missile List-of-missiles)
+
+(define-struct game [tank missiles])
+; A Game is a structure:
+; (make-game Tank List-of-missiles)
+; interpretation (make-game t alom) represents
+; a tank with some missiles alom
+
 
 ; Tank -> Image
 ; render the tank t onto the background
@@ -52,7 +68,17 @@
 
 ; Tank -> Tank
 ; Tank moves every tick
-(define (tock t) t)
+(define (tock t)
+  (make-tank (cond [(string=? (tank-direction t) "left") (max (sub1 (tank-position t)) 0)]
+                   [(string=? (tank-direction t) "right") (min (add1 (tank-position t)) SCENE-WIDTH)])
+             (tank-direction t)))
+
+(check-expect (tock tank1) tank1)
+(check-expect (tock tank2) (make-tank 1 "right"))
+(check-expect (tock tank3) (make-tank (sub1 (/ SCENE-WIDTH 4)) "left"))
+(check-expect (tock tank4) (make-tank (add1 (/ SCENE-WIDTH 4)) "right"))
+(check-expect (tock tank5) (make-tank (sub1 SCENE-WIDTH) "left"))
+(check-expect (tock tank6) tank6)
 
 ; Tank KeyEvent -> Tank
 ; press "left" to make tank move to left,
@@ -71,4 +97,5 @@
 (define (game-main initial)
   (big-bang (make-tank initial "right")
     [on-draw render]
-    [on-key control]))
+    [on-key control]
+    [on-tick tock]))
