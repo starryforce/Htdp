@@ -7,7 +7,7 @@
 (define SCENE-HEIGHT 800)
 
 (define TANK (above (wedge 10 180 "solid" "grey") (rectangle 40 10 "solid" "grey")))
-(define TANK-SPEED 2)
+(define TANK-SPEED 5)
 (define MOON (circle 20 "solid" "lightgoldenrodyellow"))
 (define SCENE (place-image/align MOON 80 40 "right" "top" (empty-scene SCENE-WIDTH SCENE-HEIGHT "dark blue")))
 
@@ -216,28 +216,39 @@
 
 ; List-of-missiles List-of-ufos -> List-of-missiles
 ; remove missile in alom that is close enough to the ufos in alou
-(define (crash-missiles alom alou) alom)
+(define (crash-missiles alom alou)
+  (cond [(empty? alom) '()]
+        [else (cond [(crash-missile (first alom) alou) (crash-missiles (rest alom) alou)]
+                    [else (cons (first alom) (crash-missiles (rest alom) alou))])]))
 
 (check-expect (crash-missiles lom1 '()) lom1)
 (check-expect (crash-missiles '() fleet1) '())
 (check-expect (crash-missiles lom1 fleet1) (list missile1))
-(check-expect (crash-missiles lom1 fleet2) '())
-(check-expect (crash-missiles lom2 fleet1) '())
-(check-expect (crash-missiles lom2 fleet2) '())
+(check-expect (crash-missiles lom1 fleet2) (list missile1))
+
+; Missile List-of-ufos -> Boolean
+; determine is missile m hit some ufo in alou
+(define (crash-missile m alou)
+  (cond [(empty? alou) #false]
+        [else (or (close-enough? (first alou) m)
+                  (crash-missile m (rest alou)))]))
+
+(check-expect (crash-missile missile1 fleet1) #false)
+(check-expect (crash-missile missile2 fleet1) #true)
 
 ; Game -> Game
 ; move every missiles and tank for every clock tick
 (define (tock g)
   (make-game (tock-tank (game-tank g))
-             (clear-missiles (tock-missiles (game-missiles g)))
-             (join-ufo (tock-ufos (game-fleet g)))))
+             (clear-missiles (tock-missiles (crash-missiles (game-missiles g) (game-fleet g))))
+             (join-ufo (tock-ufos (crash-missiles (game-fleet g) (game-missiles g))))))
 
 
 
 (check-random (tock game1)
               (make-game (tock-tank tank3)
-                         (tock-missiles lom1)
-                         (join-ufo (tock-ufos fleet1))))
+                         (tock-missiles (crash-missiles lom1 fleet1))
+                         (join-ufo (tock-ufos (crash-missiles fleet1 lom1)))))
 
 (check-random (tock game2)
               (make-game (tock-tank tank3)
