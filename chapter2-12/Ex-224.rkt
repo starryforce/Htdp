@@ -54,6 +54,7 @@
 ; A Ufo is a Posn
 (define ufo1 (make-posn 50 50))
 (define ufo2 (make-posn 70 90))
+(define ufo3 (make-posn 50 (add1 SCENE-HEIGHT)))
 
 ; A List-of-ufos is one of:
 ; - '()
@@ -191,27 +192,57 @@
 
 ; List-of-ufos -> List-of-ufos
 ; when ufo is less than 5, generate a ufo at random place on top
-(define (join-ufo alou) alou)
+(define (join-ufo alou)
+  (cond [(< (length alou) 5)
+         (cons (make-posn (random (add1 SCENE-WIDTH)) 0) alou)]
+        [else alou]))
 
+(check-random (join-ufo fleet0) (list (make-posn (random (add1 SCENE-WIDTH)) 0)))
+(check-random (join-ufo fleet1) (list (make-posn (random (add1 SCENE-WIDTH)) 0) ufo1))
+(check-random (join-ufo (list ufo1 ufo1 ufo1 ufo1 ufo1)) (list ufo1 ufo1 ufo1 ufo1 ufo1))
+
+
+(define LIMIT 20)
+; Posn Posn -> Boolean
+; check is the distance between p1 & p2 less than limit
+(define (close-enough? p1 p2) (<= (sqrt (+
+                                    (sqr (- (posn-x p1) (posn-x p2)))
+                                    (sqr (- (posn-y p1) (posn-y p2))))) LIMIT))
+
+(check-expect (close-enough? (make-posn 10 20) (make-posn 12 24)) #true)
+(check-expect (close-enough? (make-posn 10 20) (make-posn 10 30)) #true)
+(check-expect (close-enough? (make-posn 10 20) (make-posn 20 70)) #false)
+(check-expect (close-enough? (make-posn 10 20) (make-posn 10 30)) #true)
+
+; List-of-missiles List-of-ufos -> List-of-missiles
+; remove missile in alom that is close enough to the ufos in alou
+(define (crash-missiles alom alou) alom)
+
+(check-expect (crash-missiles lom1 '()) lom1)
+(check-expect (crash-missiles '() fleet1) '())
+(check-expect (crash-missiles lom1 fleet1) (list missile1))
+(check-expect (crash-missiles lom1 fleet2) '())
+(check-expect (crash-missiles lom2 fleet1) '())
+(check-expect (crash-missiles lom2 fleet2) '())
 
 ; Game -> Game
 ; move every missiles and tank for every clock tick
 (define (tock g)
   (make-game (tock-tank (game-tank g))
              (clear-missiles (tock-missiles (game-missiles g)))
-             (tock-ufos (game-fleet g))))
+             (join-ufo (tock-ufos (game-fleet g)))))
 
 
 
-(check-expect (tock game1)
+(check-random (tock game1)
               (make-game (tock-tank tank3)
                          (tock-missiles lom1)
-                         (tock-ufos fleet1)))
+                         (join-ufo (tock-ufos fleet1))))
 
-(check-expect (tock game2)
+(check-random (tock game2)
               (make-game (tock-tank tank3)
                          (clear-missiles (tock-missiles lom2))
-                         (tock-ufos fleet2)))
+                         (join-ufo (tock-ufos fleet2))))
 
 
 ; Tank KeyEvent -> Tank
@@ -255,10 +286,33 @@
                                                    (game-missiles game1))
                                              (game-fleet game1)))
 
-; Number -> Tank
+; Game -> Boolean
+; when some of the ufo reach the game, the game end
+(define (fail? g) (ufo-landed? (game-fleet g)))
+
+(check-expect (fail? game1) #false)
+(check-expect (fail? (make-game tank1 '() (list ufo1 ufo3))) #true)
+
+; List-of-ufos -> Boolean
+; check if some ufo in alou landed on the ground
+(define (ufo-landed? alou)
+  (cond [(empty? alou) #false]
+        [else (or (> (posn-y (first alou)) SCENE-HEIGHT)
+                  (ufo-landed? (rest alou)))]))
+
+(check-expect (ufo-landed? (list ufo1)) #false)
+(check-expect (ufo-landed? (list ufo3)) #true)
+
+; Game -> Image
+; when the game failed, show some information to the player
+(define (fail-tip g) (text "Our Earth get fucked up" 24 "red"))
+
+
+; Number -> Game
 ; start game with tank at x-coordinate of initial
 (define (game-main speed)
   (big-bang (make-game (make-tank 0 "right") '() '())
     [on-draw render]
     [on-key control]
-    [on-tick tock speed]))
+    [on-tick tock speed]
+    [stop-when fail? fail-tip]))
