@@ -28,7 +28,7 @@
      (posn-x p) (posn-y p)
      img))
  
-; graphical constants:    
+; graphical constants:
 (define emt
   (empty-scene 100 100))
 (define dot
