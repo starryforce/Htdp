@@ -103,19 +103,23 @@
                                                            "bottom"
                                                            SCENE))
 
-; [List-of Missile] Image -> Image
-; render alom as MISSILE onto the s
-(define (render-missiles alom s)
-  (local (; Missile Image -> Image
-          ; place cur onto prev
+; [List-of Posn] Image Image -> Image
+; render a list of posn in alop as unit onto background s.
+(define (render-posns alop s unit) 
+  (local (; Posn Image -> Image
+          ; render cur as UFO onto prev
           (define (fn cur prev)
-            (place-image MISSILE
+            (place-image unit
                          (posn-x cur)
                          (posn-y cur)
                          prev))
           )
     ; - IN -
-    (foldr fn s alom)))
+    (foldr fn s alop)))
+
+; [List-of Missile] Image -> Image
+; render alom as MISSILE onto s
+(define (render-missiles alom s) (render-posns alom s MISSILE))
 
 (check-expect (render-missiles lom0 SCENE) SCENE)
 (check-expect (render-missiles lom1 SCENE) (place-image MISSILE
@@ -126,20 +130,9 @@
                                                                      20
                                                                      SCENE)))
 
-
 ; [List-of Ufo] Image -> Image
 ; render alos as UFO onto s
-(define (render-ufos alou s)
-  (local (; Ufo Image -> Image
-          ; render cur as UFO onto prev
-          (define (fn cur prev)
-            (place-image UFO
-                         (posn-x cur)
-                         (posn-y cur)
-                         prev))
-          )
-    ; - IN -
-    (foldr fn s alou)))
+(define (render-ufos alou s) (render-posns alou s UFO))
 
 (check-expect (render-ufos fleet0 SCENE) SCENE)
 (check-expect (render-ufos fleet2 SCENE) (place-image UFO
@@ -165,14 +158,21 @@
 (check-expect (tock-tank tank6) tank6)
 
 
-; [List-of Missile] -> [List-of Missile]
-; Missiles move upward every tick
-(define (tock-missiles alom)
+; [List-of Posn] Number -> [List-of Posn]
+; change every posn i alop's y-coordinate y-speed pixels every tick
+(define (tock-posns alop y-speed)
   (local (; Missile -> Missile
           ; move m upwards
-          (define (fn m) (make-posn (posn-x m) (- (posn-y m) 3)))
+          (define (fn m) (make-posn (posn-x m) (+ (posn-y m) y-speed)))
           )
-    (map fn alom)))
+    (map fn alop)))
+
+
+
+
+; [List-of Missile] -> [List-of Missile]
+; Missiles move upward every tick
+(define (tock-missiles alom) (tock-posns alom -3))
 
 (check-expect (tock-missiles lom0) lom0)
 (check-expect (tock-missiles lom1) (list (make-posn 10 (- 20 MISSILE-SPEED))
@@ -194,13 +194,7 @@
 
 ; [List-of Ufo] -> [List-of Ufo]
 ; Ufos move downward every tick
-(define (tock-ufos alou)
-  (local (; Ufo -> Ufo
-          ; move u downward every tick
-          (define (fn u) (make-posn (posn-x u)
-                                    (+ (posn-y u) UFO-SPEED)))
-          )
-    (map fn alou)))
+(define (tock-ufos alou) (tock-posns alou UFO-SPEED))
 
 (check-expect (tock-ufos fleet0) fleet0)
 (check-expect (tock-ufos fleet1) (list (make-posn 50 (+ 50 UFO-SPEED))))
