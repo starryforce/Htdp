@@ -28,7 +28,7 @@
 
 
 
-; Dir String -> [List-of [Maybe Path]]
+; Dir String -> [List-of Path]
 ; produces a path to a file with name f in d
 ; otherwise it produces #false.
 (define (find d f)
