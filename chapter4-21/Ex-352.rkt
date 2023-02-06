@@ -16,6 +16,7 @@
 ; – (make-add BSL-var-expr BSL-var-expr)
 ; – (make-mul BSL-var-expr BSL-var-expr)
 
+(define ex0 20)
 (define ex1 'x)
 (define ex2 (make-add 'x 3))
 (define ex3 (make-mul 1/2 (make-mul 'x 3)))
