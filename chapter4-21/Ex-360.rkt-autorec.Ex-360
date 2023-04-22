@@ -6,28 +6,9 @@ Concretely, the data representation should work for a sequence that
 freely mixes constant definitions and one-argument function definitions.
 Make sure you can represent the definitions area consisting of three definitions at the beginning of this section.
 We name this class of data BSL-da-all.
-|#
 
-; A BSL-const-def is a list of two items:
-;   (cons Symbol (cons Number '())).
+; A BSL-da-all is [List-of 
 
-(define-struct fun-def [name parameter body])
-; A BSL-fun-def is a structure:
-; (make-fun-def Symbol Symbol BSL-fun-expr)
-; interpretation (make-fun-def n p b) represent a function defination
-; it's function name is n, p is it's parameter, b is function body
-
-; An Association is one of:
-; - BSL-const-def
-; - BSL-fun-def
-
-(define a1 '(close-to-pi 3.14))
-(define a2 (make-fun-def 'area-of-circle 'r (* 'close-to-pi (* 'r 'r))))
-(define a3 (make-fun-def 'volume-of-10-cylinder 'r (* 10 ('area-of-circle 'r))))
-
-; A BSL-da-all is [List-of Association]
-
-#|
 Q2 Design the function lookup-con-def. It consumes a BSL-da-all da and a symbol x.
 It produces the representation of a constant definition whose name is x, if such a piece of data exists in da;
 otherwise the function signals an error saying that no such constant definition can be found.
