@@ -38,5 +38,4 @@ We refer to this newly defined class of data as BSL-fun-expr.
 (make-mul 5 (make-fn 'k (make-add 1 1)))
 
 ; (* (i 5) (k (+ 1 1)))
-
 (make-mul (make-fn 'i 5) (make-fn 'k (make-add 1 1 )))
