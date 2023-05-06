@@ -97,7 +97,7 @@
 ; renders an XEnum.v2 as an image 
 (define (render-enum xe)
   (local ((define content (xexpr-content xe))
-          ; XItem.v2 Image -> Image 
+          ; XItem.v2 Image -> Image
           (define (deal-with-one item so-far)
             (above/align 'left (render-item item) so-far)))
     (foldr deal-with-one empty-image content)))

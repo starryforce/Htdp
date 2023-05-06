@@ -2,11 +2,13 @@
 
 (require 2htdp/image)
 
-#| Exercise 374.
-The data definitions in figure 127 use list.
-Rewrite them so they use cons.
-Then use the recipe to design the rendering functions for XEnum.v2 and XItem.v2 from scratch.
-You should come up with the same definitions as in figure 128. 
+#| Exercise 375.
+The wrapping of cond with
+(beside/align 'center BT ...)
+may surprise you.
+Edit the function definition so that the wrap-around appears once in each clause.
+Why are you confident that your change works? Which version do you prefer?
+
 |#
 
 ; An Xexpr.v2 is a list: 
@@ -118,11 +120,10 @@ You should come up with the same definitions as in figure 128.
 ; renders one XItem.v2 as an image 
 (define (render-item an-item)
   (local ((define content (first (xexpr-content an-item))))
-    (bulletize
-     (cond
-       [(word? content)
-        (text (word-text content) SIZE BLACK)]
-       [else (render-enum content)]))))
+    (cond
+      [(word? content)
+       (bulletize (text (word-text content) SIZE BLACK))]
+      [else (bulletize (render-enum content))])))
 
 (check-expect (render-item xi1) (bulletize (text "hello" SIZE BLACK)))
 (check-expect (render-item xi2) (bulletize (text "world" SIZE BLACK)))
