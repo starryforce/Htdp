@@ -26,9 +26,11 @@ Add this self-reference to the template and then explain why the finished parsin
 (define (xexpr-attr xe)
   (local ((define optional-loa+content (rest xe)))
     (cond
-      [(empty? optional-loa+content) ...]
-      [else (... (xexpr-attr (first optional-loa+content))
-             ... (rest optional-loa+content) ...)])))
+      [(empty? optional-loa+content) '()]
+      [else (local ((define loa-or-x (first optional-loa+content)))
+              (if (list-of-attributes? loa-or-x)
+                  loa-or-x
+                  '()))])))
 
 ; it just about the most outer element, inner makes no difference
 
