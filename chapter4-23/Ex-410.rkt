@@ -51,18 +51,16 @@ Assume that the schemas agree on the predicates for each column.
 ; produces a new database with this schema and the joint content of both db1 & db2
 ; contrait: the schemas agree on the predicates for each column
 (define (db-union db1 db2)
-  (local ((define content1 (db-content db1))
-          (define content2 (db-content db2))
-          ; Row -> Boolean
-          ; determine if row is different from every row in c1
-          (define (unique? row)
-            (andmap (lambda (r) (not (equal? row r))) content1))
-          ; Content Content -> Content
+  (local (; Content Content -> Content
           (define (merge c1 c2)
-            (append c1
-                    (filter unique? c2))))
+            (local ( ; Row -> Boolean
+                    ; determine if row is different from every row in c1
+                    (define (unique? row)
+                      (andmap (lambda (r) (not (equal? row r))) c1))
+                    (define c2-uniqued (filter unique? c2)))
+              (append c1 c2-uniqued))))
     (make-db (db-schema db1)
-             (merge content1 content2 ))))
+             (merge (db-content db1) (db-content db2) ))))
 
 (check-expect (db-content (db-union school-db1 school-db2))
               `(("Alice" 35 #true)
