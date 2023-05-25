@@ -73,6 +73,7 @@ How many steps does the revised algorithm save?
 
 (check-expect (quick-sort< (list 11 8 14 7)) (list 7 8 11 14))
 
+#|
 (quick-sort< (list 11 8 14 7))
 ==
 (append (quick-sort< (list 8 7))
@@ -106,5 +107,8 @@ How many steps does the revised algorithm save?
         (list 14))
 ==
 (append (list 7 8 11 14))
+|#
 
-        
+; origin 11 steps
+; now 7 steps
+; save 4 steps, just equal to the list length
