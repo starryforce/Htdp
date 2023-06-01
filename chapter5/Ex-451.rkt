@@ -38,10 +38,59 @@ This kind of root-finding process is often called a linear search.
     (fn 0)))
 
 (check-expect (find-linear table1) 4)
+(check-expect (find-linear table2) 1023)
+
+#|
+Design find-binary, which also finds the smallest index for the root of a monotonically increasing table
+but uses generative recursion to do so.
+Like ordinary binary search, the algorithm narrows an interval down to the smallest possible size and then chooses the index.
+Don’t forget to formulate a termination argument.
+
+Hint
+The key problem is that a table index is a natural number, not a plain number.
+Hence the interval boundary arguments for find must be natural numbers.
+Consider how this observation changes
+(1) the nature of trivially solvable problem instances,
+(2) the midpoint computation,
+(3) and the decision as to which interval to generate next.
+To make this concrete, imagine a table with 1024 slots and the root at 1023.
+How many calls to find are needed in find-linear and find-binary, respectively? 
+|#
 
 ; Table -> N
-; finds the smallest index for the root of t
-(define (find-binary t) 0)
+; assume (1) t is a monotonically increasing table
+; (2) (<= (table-ref t i)(table-ref t (add1 i)))
+; generative finds the smallest index for the root of t by
+; divides inteval in half, the root is in one of two halves 
+(define (find-binary t)
+  (local ((define length (table-length t))
+          (define (find-index left right)
+            (local (; calc the abs of ith number
+                    ; N -> Number
+                    (define (offset index)
+                      (abs (table-ref t index)))
+                    (define mid (floor (/ (+ left right) 2)))
+                    (define offset-m (offset mid))
+                    (define offset-sub1 (offset (sub1 mid)))
+                    (define offset-add1 (offset (add1 mid))))
+              (cond [(= left right) left]
+                    [(= (add1 left) right)
+                     (if (<= (offset left) (offset right)) left right)]
+                    [else (if (<= offset-sub1 offset-add1)
+                              (find-index left mid)
+                              (find-index mid right))]))))
+    (find-index 0 (sub1 length))))
+
+; 1. (= left right) only 1 item, so the answer is left
+;    (= (add1 left) right) only 2 items,
+;    so the answer is the index which offset is smaller.
+; 2. as 1. says.
+; 3. midpoint (floor (/ (+ left right) 2))
 
 (check-expect (find-binary table1) 4)
 (check-expect (find-binary table2) 1023)
+
+; linear 1023 times
+; binary 10 times
+
+; left: 0 511 767 895 991 1007 1015 1019 1021 1022
