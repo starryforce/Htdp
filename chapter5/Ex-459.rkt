@@ -2,7 +2,7 @@
 
 (define ε 0.01)
 ; the number of rectangles
-(define R (expt 10 5))
+(define R (expt 10 6))
 
  
 ; [Number -> Number] Number Number -> Number
