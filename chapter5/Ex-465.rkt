@@ -18,6 +18,7 @@ subtract returns the rest of the list that results from the subtractions.
 ; assume e1 and e2 are of same length
 (check-expect (subtract (list 2 5 12 31) (list 2 2 3 10)) (list 3 9 21))
 (check-expect (subtract (list 4 1 -2 1) (list 2 2 3 10)) (list -3 -8 -19))
+(check-expect (subtract (list -3 -8 -19) (list 3 9 21)) (list 1 2))
 (define (subtract e1 e2)
   (local ((define t (/ (first e1) (first e2))))
     (rest (map (lambda (n1 n2) (- n1 (* n2 t))) e1 e2))))
