@@ -13,7 +13,7 @@ It consumes a Node n and a Graph g and produces the list of immediate neighbors 
 ; A Node is a Symbol.
 
 ; A Graph is:
-; [List-of [List-of Symbol]]
+; [List-of [List-of Node]]
 
 (define sample-graph
   (list (list 'A 'B 'E)
@@ -24,7 +24,7 @@ It consumes a Node n and a Graph g and produces the list of immediate neighbors 
         (list 'F 'D 'G)
         (list 'G)))
 
-; Node Graph -> [List-of Symbol]
+; Node Graph -> [List-of Node]
 ; produces the list of immediate neighbors of n in g.
 (check-expect (neighbors 'E sample-graph) '(C F))
 (check-expect (neighbors 'D sample-graph) '())
