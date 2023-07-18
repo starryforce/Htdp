@@ -26,10 +26,15 @@
 (define initial-puzzle (list (make-puzzle 3 3 L 0 0)))
 (define final-puzzle (list (make-puzzle 0 0 R 3 3) (make-puzzle  1 1 L 2 2) (make-puzzle 3 3 L 0 0)))
 
+; query the current status of p
+(define (current-puzzle p) (first p))
+; query the history of p
+(define (history-puzzle p) (rest p))
+
 ; PuzzleState -> Boolean
 ; detects whether in a given state all people are on the right river bank
 (check-expect (final? final-puzzle) #t)
-(define (final? p) (equal? (first p) (make-puzzle 0 0 R 3 3)))
+(define (final? p) (equal? (current-puzzle p) (make-puzzle 0 0 R 3 3)))
 
 (define TR '((0 1 0 -1)
              (0 2 0 -2)
@@ -45,7 +50,7 @@
 ; generates the list of all those states that a boat ride can reach.
 (define (create-next-states alop)
   (local ((define (generate pl)
-            (local ((define p (first pl))
+            (local ((define p (current-puzzle pl))
                     (define boat (puzzle-boat p))
                     (define matrix (map (lambda (x) (map (lambda (y) (* (if (equal? boat L) -1 1) y)) x)) TR)))
               (map (lambda (r) (cons (make-puzzle (+ (puzzle-leftm p) (first r))
@@ -64,7 +69,7 @@
                    (or (>= (puzzle-rightm p) (puzzle-rightc p)) (zero? (puzzle-rightm p)))
                    )))
           (define (new? p)
-            (not (member? (first p) (rest p)))))
+            (not (member? (current-puzzle p) (history-puzzle p)))))
     (filter new? (filter valid? (foldr append '() (map generate alop))))))
 
 
