@@ -7,6 +7,11 @@
 (define background (empty-scene 200 200))
 (define LINE-COLOR "dark blue")
 
+(define left-shorten (/ 3 5))
+(define left-rotate -15)
+(define right-shorten (/ 4 5))
+(define right-rotate 20)
+
 ; Image Number Number Number Number -> Image
 ; generative adds the line to scene0. the line's start point
 ; is (make-posn base-x base-y), and length is len with rotate a
@@ -20,16 +25,16 @@
          (local ((define scene1 (add-rotate-line scene0 base-x base-y len a))
                  (define start-left (end-point base-x base-y (* len (/ 1 3)) a))
                  (define scene2 (add-savannah scene1
-                                                 (posn-x start-left)
-                                                 (posn-y start-left)
-                                                 (* len (/ 3 5))
-                                                 (- a 15)))
+                                              (posn-x start-left)
+                                              (posn-y start-left)
+                                              (* len left-shorten)
+                                              (+ a left-rotate)))
                  (define start-right (end-point base-x base-y (* len (/ 2 3)) a))
                  (define scene3 (add-savannah scene2
-                                                 (posn-x start-right)
-                                                 (posn-y start-right)
-                                                 (* len (/ 4 5))
-                                                 (+ a 20)))
+                                              (posn-x start-right)
+                                              (posn-y start-right)
+                                              (* len right-shorten)
+                                              (+ a right-rotate)))
                  )
            scene3)]))
 
